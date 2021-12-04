@@ -3,7 +3,11 @@
     <header class="py-6 md:py-12 md:border-b border-gray-300">
       <div class="flex justify-between items-center px-6">
         <div class="flex items-center">
-          <button type="button" class="block lg:hidden">
+          <button
+            type="button"
+            class="block lg:hidden"
+            @click="showMobileNav = !showMobileNav"
+          >
             <MenuIcon class="mt-1 h-4 w-4" />
           </button>
 
@@ -37,11 +41,70 @@
           </div>
         </div>
       </div>
+
+      <transition
+        enter-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-class="opacity-100"
+        leave-to-class="opacity-0"
+        enter-active-class="transition duration-200"
+        leave-active-class="transition duration-150"
+      >
+        <div
+          v-if="showMobileNav"
+          @click="showMobileNav = false"
+          class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-10"
+        ></div>
+      </transition>
+      <transition
+        enter-class="transform -translate-x-full opacity-0"
+        enter-to-class="trasnform translate-x-0 opacity-100"
+        leave-class="trasnform translate-x-0 opacity-100"
+        leave-to-class="transform -translate-x-full opacity-0"
+        enter-active-class="transition duration-200"
+        leave-active-class="transition duration-200"
+      >
+        <div
+          v-if="showMobileNav"
+          class="lg:hidden fixed inset-y-0 left-0 overflow-hidden w-72 z-20"
+        >
+          <div class="bg-white w-full h-full overflow-y-auto">
+            <div class="p-2">
+              <button type="button" class="p-4" @click="showMobileNav = false">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="3"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div class="mt-6 px-6 space-y-6">
+              <a
+                href="#"
+                v-for="(link, index) in links"
+                :key="`mobile-link-${index}`"
+                class="block text-lg text-gray-600 font-bold tracking-wide"
+                >{{ link.label }}</a
+              >
+            </div>
+          </div>
+        </div>
+      </transition>
     </header>
 
     <div class="md:mt-16 lg:mt-24 lg:grid lg:grid-cols-2">
       <div class="md:px-12 lg:px-16 xl:px-24">
-        <div class="relative">
+        <div class="relative overflow-hidden lg:overflow-visible">
           <transition
             :enter-class="enterClass"
             :enter-to-class="enterToClass"
@@ -106,7 +169,7 @@
           </div>
         </div>
 
-        <div class="hidden mt-8 md:grid md:grid-cols-4 md:gap-8">
+        <div class="hidden mt-8 md:grid md:grid-cols-4 md:gap-4 xl:gap-8">
           <div
             class="col-span-1"
             v-for="(thumbnail, index) in productImages"
@@ -258,6 +321,7 @@ export default {
       ],
       activeIndex: 0,
       dir: false,
+      showMobileNav: false,
     };
   },
 
