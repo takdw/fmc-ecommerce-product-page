@@ -1,6 +1,12 @@
 {
   "name": "ecommerce-product-page",
   "version": "1.0.0",
+  "license": "GPL-3.0-or-later",
+  "author": {
+    "name": "Tamrat Assefa Kessito",
+    "email": "mamushassefa@live.com",
+    "url": "https://tamrat.me"
+  },
   "private": true,
   "scripts": {
     "dev": "nuxt",
