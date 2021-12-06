@@ -27,12 +27,100 @@
           </nav>
         </div>
 
-        <div class="flex items-center space-x-4 md:space-x-8">
-          <a href="#">
-            <CartIcon class="text-gray-500 h-6 w-6 md:h-8 md:w-8" />
-          </a>
+        <div class="flex items-center space-x-6 md:space-x-8">
+          <div class="relative" ref="cartContainer">
+            <button
+              ref="cartButton"
+              type="button"
+              @click="cartOpen = !cartOpen"
+            >
+              <CartIcon class="text-gray-500 h-6 w-6 md:h-8 md:w-8" />
+            </button>
 
-          <div class="w-6 h-6 md:w-14 md:h-14 rounded-full overflow-hidden">
+            <div
+              v-if="cartTotal > 0"
+              class="absolute -top-4 -right-4 h-6 w-6 flex items-center justify-center bg-theme-orange text-white font-bold px-4 py-1 rounded-full text-xs"
+            >
+              {{ cartTotal }}
+            </div>
+
+            <transition
+              enter-class="transform scale-50 opacity-0"
+              enter-to-class="transform scale-100 opacity-100"
+              leave-class="transform scale-100 opacity-100"
+              leave-to-class="transform scale-50 opacity-0"
+              enter-active-class="transition duration-200"
+              leave-active-class="transition duration-150"
+            >
+              <div
+                ref="cart"
+                v-show="cartOpen"
+                class="fixed md:absolute mt-2 inset-x-0 md:inset-auto px-4 md:px-0 md:-right-10 w-full md:w-[400px] z-50 origin-top-right"
+              >
+                <div class="bg-white rounded-2xl border shadow-xl">
+                  <div class="px-8 py-6 border-b">
+                    <h3 class="font-bold">Cart</h3>
+                  </div>
+                  <div v-if="cartItems.length === 0" class="text-center py-12">
+                    <p class="font-bold text-gray-500">Your cart is empty.</p>
+                  </div>
+                  <div v-else class="p-6">
+                    <div
+                      v-for="(item, index) in cartItems"
+                      :key="`cart-item-${index}`"
+                      class="flex items-center space-x-4"
+                    >
+                      <div class="flex-1 flex items-center space-x-4">
+                        <img
+                          :src="product.images[index].thumbnail"
+                          alt="Product"
+                          class="h-16 w-16 object-cover rounded-lg"
+                        />
+
+                        <div class="text-gray-600">
+                          <p>Autumn Limited Edition...</p>
+                          <p class="mt-2">
+                            $125.00 x {{ item.count }}
+                            <strong class="text-black"
+                              >${{ (125 * item.count).toFixed(2) }}</strong
+                            >
+                          </p>
+                        </div>
+                      </div>
+                      <div class="flex items-center">
+                        <button type="button">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            class="h-5 w-5 text-gray-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="mt-6">
+                      <button
+                        type="button"
+                        class="w-full py-4 bg-theme-orange rounded-xl font-bold text-white"
+                      >
+                        Checkout
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </div>
+
+          <div class="w-10 h-10 md:w-14 md:h-14 rounded-full overflow-hidden">
             <img
               class="w-full h-full object-cover"
               src="https://avatars.githubusercontent.com/u/17249078?v=4"
@@ -172,7 +260,7 @@
         <div class="hidden mt-8 md:grid md:grid-cols-4 md:gap-4 xl:gap-8">
           <div
             class="col-span-1"
-            v-for="(thumbnail, index) in productImages"
+            v-for="(thumbnail, index) in product.images"
             :key="`thumbnail-${index}`"
           >
             <div
@@ -208,27 +296,27 @@
           <p
             class="text-yellow-500 uppercase text-sm md:text-xl tracking-widest font-bold"
           >
-            Sneaker Company
+            {{ product.brand }}
           </p>
           <h2 class="mt-4 text-4xl md:text-6xl font-bold">
-            Fall Limited Edition Sneakers
+            {{ product.name }}
           </h2>
           <p class="mt-4 md:mt-8 md:text-xl text-gray-500">
-            These low-profile sneakers are your perfect casual wear companion.
-            Featuring a durable rubber outer sole, they'll withstand everything
-            the weather can offer.
+            {{ product.description }}
           </p>
 
           <div class="mt-6 md:mt-10 flex lg:block items-center justify-between">
             <div class="flex items-center space-x-4">
-              <p class="text-3xl md:text-4xl font-bold">$125.00</p>
+              <p class="text-3xl md:text-4xl font-bold">
+                ${{ ((product.price * product.discount) / 100).toFixed(2) }}
+              </p>
               <span
                 class="bg-yellow-100 text-yellow-600 rounded px-2 py-1 font-bold md:text-lg"
-                >50%</span
+                >{{ product.discount }}%</span
               >
             </div>
             <p class="md:mt-2 md:text-lg line-through font-bold text-gray-300">
-              $250.00
+              ${{ product.price.toFixed(2) }}
             </p>
           </div>
 
@@ -236,7 +324,11 @@
             <div
               class="md:col-span-2 py-2 md:py-5 bg-gray-100 rounded-xl flex justify-between items-center"
             >
-              <button type="button" class="px-4 py-2">
+              <button
+                type="button"
+                class="inline-block px-4 py-2"
+                @click="decreaseQuantity"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="text-theme-orange h-6 w-6"
@@ -252,8 +344,16 @@
                   />
                 </svg>
               </button>
-              <span class="font-bold md:text-lg">1</span>
-              <button type="button" class="px-4 py-2">
+              <input
+                class="w-full inline-block text-center font-bold md:text-lg bg-transparent"
+                disabled
+                v-model="quantity"
+              />
+              <button
+                type="button"
+                class="inline-block px-4 py-2"
+                @click="increaseQuantity"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   class="text-theme-orange h-6 w-6"
@@ -273,6 +373,8 @@
 
             <div class="mt-6 md:mt-0 md:col-span-3 md:h-full">
               <button
+                @click="addToCart"
+                type="button"
                 class="block w-full py-4 md:h-full flex items-center justify-center space-x-4 text-white bg-theme-orange rounded-xl shadow-xl"
               >
                 <CartIcon class="h-5 w-5" />
@@ -289,6 +391,8 @@
 </template>
 
 <script>
+import { createPopper } from "@popperjs/core";
+
 import { CartIcon, MenuIcon } from "@/components/icons";
 
 export default {
@@ -301,33 +405,44 @@ export default {
         { label: "About" },
         { label: "Contact" },
       ],
-      productImages: [
-        {
-          src: require("~/assets/images/image-product-1.jpg"),
-          thumbnail: require("~/assets/images/image-product-1-thumbnail.jpg"),
-        },
-        {
-          src: require("~/assets/images/image-product-2.jpg"),
-          thumbnail: require("~/assets/images/image-product-2-thumbnail.jpg"),
-        },
-        {
-          src: require("~/assets/images/image-product-3.jpg"),
-          thumbnail: require("~/assets/images/image-product-3-thumbnail.jpg"),
-        },
-        {
-          src: require("~/assets/images/image-product-4.jpg"),
-          thumbnail: require("~/assets/images/image-product-4-thumbnail.jpg"),
-        },
-      ],
+      product: {
+        name: "Fall Limited Edition Sneakers",
+        brand: "Sneaker Company",
+        price: 250,
+        discount: 50,
+        description:
+          "These low-profile sneakers are your perfect casual wear companion. Featuring a durable rubber outer sole, they'll withstand everything the weather can offer.",
+        images: [
+          {
+            src: require("~/assets/images/image-product-1.jpg"),
+            thumbnail: require("~/assets/images/image-product-1-thumbnail.jpg"),
+          },
+          {
+            src: require("~/assets/images/image-product-2.jpg"),
+            thumbnail: require("~/assets/images/image-product-2-thumbnail.jpg"),
+          },
+          {
+            src: require("~/assets/images/image-product-3.jpg"),
+            thumbnail: require("~/assets/images/image-product-3-thumbnail.jpg"),
+          },
+          {
+            src: require("~/assets/images/image-product-4.jpg"),
+            thumbnail: require("~/assets/images/image-product-4-thumbnail.jpg"),
+          },
+        ],
+      },
+      quantity: 1,
       activeIndex: 0,
       dir: false,
       showMobileNav: false,
+      cartOpen: false,
+      cartItems: [],
     };
   },
 
   computed: {
     activeImage() {
-      return this.productImages[this.activeIndex];
+      return this.product.images[this.activeIndex];
     },
     enterToClass() {
       return `transform translate-x-0 opacity-100`;
@@ -341,6 +456,11 @@ export default {
     leaveToClass() {
       return `transform ${this.dir ? "" : "-"}translate-x-8 opacity-0`;
     },
+    cartTotal() {
+      return this.cartItems
+        .map((item) => item.count)
+        .reduce((a, b) => a + b, 0);
+    },
   },
 
   watch: {
@@ -351,24 +471,56 @@ export default {
         this.dir = false;
       }
     },
+
+    cartOpen(val) {
+      if (val) {
+        document.body.addEventListener("click", this.handleClickAway);
+      } else {
+        document.body.removeEventListener("click", this.handleClickAway);
+      }
+    },
+  },
+
+  mounted() {
+    this.handleClickAway = (event) => {
+      if (this.$refs.cartContainer.contains(event.target)) {
+        return;
+      }
+
+      this.cartOpen = false;
+    };
   },
 
   methods: {
     prevImage() {
       if (this.activeIndex === 0) {
-        this.activeIndex = this.productImages.length - 1;
+        this.activeIndex = this.product.images.length - 1;
         return;
       }
 
       this.activeIndex--;
     },
     nextImage() {
-      if (this.activeIndex === this.productImages.length - 1) {
+      if (this.activeIndex === this.product.images.length - 1) {
         this.activeIndex = 0;
         return;
       }
 
       this.activeIndex++;
+    },
+    increaseQuantity() {
+      this.quantity++;
+    },
+    decreaseQuantity() {
+      if (this.quantity === 1) {
+        return;
+      }
+
+      this.quantity--;
+    },
+    addToCart() {
+      this.cartItems.push({ count: this.quantity });
+      this.quantity = 1;
     },
   },
 
